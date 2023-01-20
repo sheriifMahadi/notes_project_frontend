@@ -1,7 +1,6 @@
 import axios from 'axios'
 import authHeader from './token'
-const baseUrl = 'http://localhost:3001/api/notes'
-
+const baseUrl = 'https://z-note.fly.dev/api/notes'
 
 const getAllNotes = async () => {
     const response = await axios.get(baseUrl,  { headers: authHeader() })
@@ -30,6 +29,7 @@ const updateNote = async(id, newObj) => {
 const deleteNote = async (id) => {
     return await axios.delete(`${baseUrl}/${id}`,  { headers: authHeader() })
 }
+
 
 export default {
     getAllNotes,

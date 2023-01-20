@@ -9,10 +9,12 @@ import Tooltip from '@mui/material/Tooltip';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import { Typography,  Container} from "@mui/material"
 import Forms from '../notes_components/Forms'
-import  { updateNote } from "../reducers/notesReducer"
+import  { updateNote, deleteNote } from "../reducers/notesReducer"
 import { logout } from '../reducers/accountReducer';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import { retrieveSingleGroup, retrieveGroupNotes, deleteGroup} from '../reducers/groupsReducer'
 
-  
+ 
 const SingleNote = ({id}) => {
     const initialState = {
         id: null,
@@ -25,10 +27,11 @@ const SingleNote = ({id}) => {
   
     const [single, setSingle] = useState(initialState)
     const [display, setDisplay] = useState(false)
+    const [singleGroup, setSingleGroup] = useState('')
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
-
+    
     const fetch = async () => {
         try{
           const res = await dispatch(retrieveSingleNotes(id)).unwrap()
@@ -41,16 +44,33 @@ const SingleNote = ({id}) => {
           dispatch(updateNotification({msg: 'Page not found',  severity: 'error'}))
         }
       }
-
+      const fetchGroup = async (id) => {
+        try{
+          const res = await dispatch(retrieveSingleGroup(id)).unwrap()
+		      return res
+    
+        }catch(err) {
+          if (err.message === 'Request failed with status code 401'){
+			    dispatch(logout())
+          }
+          dispatch(updateNotification({msg: 'Page not found',  severity: 'error'}))
+        }
+      }
     useEffect(() => {
       fetch().then(resolved => {
         if (resolved) {
             setSingle(resolved)
+            if (resolved.group){
+              fetchGroup(resolved.group).then(resolved => {
+                if (resolved) {
+                    setSingleGroup(resolved)
+                }
+              })
+            }
+          
         }
       })
-    
     }, [])
-
       const convertDate = (d) => {    
         if (d) {
           let fullDate = new Date(d)
@@ -60,39 +80,51 @@ const SingleNote = ({id}) => {
           return dateTime
         }        
       }
-
       const handleUpdate = async (event) => {
         event.preventDefault()
-        // const id = single.id
         const noteObj = {
               label: event.target.title.value,
               content: event.target.content.value,
+              groupname: event.target.group.value,
               modified: new Date().toISOString(),
             }
+          
         dispatch(updateNote({id: single.id, noteobj: noteObj}))
           .unwrap()
           .then(data => {
+            console.log(data)
             event.target.title.value = ''
             event.target.content.value = ''
             setDisplay(false)
             setSingle(data)
           })
           .catch(e => {
-            console.log(e);
           });
-
+    }
+    const handleDelete = async (id) => {
+      try{
+        const res = await dispatch(deleteNote(id)).unwrap()
+        navigate(`/Groups`);
+        window.location.reload();
+        return res
+      
+        }catch(err) {
+        if (err.message === 'Request failed with status code 401'){
+          dispatch(logout())
+        }
+        dispatch(updateNotification({msg: 'Error performing action',  severity: 'error'}))
+        }	
     }
     const displayForm = (event) => {
       setDisplay(true)
     }
-   
     if (display === true){
       return (<div>
         <Forms 
-        header={'Update Note'}
-        action={handleUpdate}
-        buttonLabel={'update note'}
-        initialValues={single}/>
+          header={'Update Note'}
+          action={handleUpdate}
+          buttonLabel={'update note'}
+          initialValues={single}/>
       </div>)
     }
     return (
@@ -103,6 +135,11 @@ const SingleNote = ({id}) => {
                     <CreateOutlinedIcon />
                 </IconButton>
                 </Tooltip>
+                <Tooltip title="delete" sx={{marginLeft: '20px'}}>
+                  <IconButton edge="start" onClick={() => handleDelete(single.id)}>
+                      <DeleteOutlineOutlinedIcon/>
+                  </IconButton>
+                </Tooltip> 
             <Typography variant="h5" align="center">
               Title: {single.label}
             </Typography>
@@ -114,6 +151,9 @@ const SingleNote = ({id}) => {
             </Typography>
             <Typography variant="h6" align="center">
               Last modified: {convertDate(single.modified)}
+            </Typography>
+            <Typography variant="h6" align="center">
+              Group: {singleGroup.groupName}
             </Typography>
           </Container>
         </div>

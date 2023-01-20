@@ -16,7 +16,7 @@ import SearchField from "./Search";
 const Note = () => {
     const [search, setSearch] = useState('')
     const [showAll, setShowAll] = useState(false)
-
+    
     const classes = useStyles()
     const notes = useSelector(state => state.notes)
     const dispatch = useDispatch()
@@ -43,7 +43,6 @@ const Note = () => {
             if (e.message === 'Request failed with status code 401'){
                 dispatch(logout())
               } 
-          console.log(e);
         });
     }
 
@@ -53,12 +52,11 @@ const Note = () => {
 
     const itemsToShow = showAll 
     ? notes
-    : notes.filter(note => 
-      note.label.toLowerCase().includes(search.toLowerCase()))
-
+    : notes.filter(note =>
+        note.label.toLowerCase().includes(search.toLowerCase()))
     return (
         <div>
-            <SearchField  searchInput={handleSearchInput} val={search}/>
+            <SearchField searchInput={handleSearchInput} val={search}/>
 
             <Container className={classes.cardGrid} maxWidth="md">
             {/* <SearchField/> */}

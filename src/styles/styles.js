@@ -51,8 +51,13 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center', 
         padding: '0', 
         margin: '60px 0 20px 0'
-
    },
+   tableContainer: {
+        padding: "50px 0",
+        textDecoration: 'none !important',
+        color: 'black!important',
+   }
+
 }))
 
 export default useStyles

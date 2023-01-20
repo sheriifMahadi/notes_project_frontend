@@ -1,5 +1,5 @@
 import axios from "axios";
-const loginUrl = 'http://localhost:3001/api/'
+const loginUrl = 'https://z-note.fly.dev/api/'
 
 const login = async credentials => {
   const response = await axios.post(`${loginUrl}login`, credentials)

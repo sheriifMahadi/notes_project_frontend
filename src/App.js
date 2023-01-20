@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react'
 import Note from './notes_components/Notes';
 import NoteForm from './notes_components/NoteForm';
 import { useDispatch } from 'react-redux';
-import { retrieveNotes } from './reducers/notesReducer';
+import { retrieveNotes} from './reducers/notesReducer';
+import { retrieveGroups } from './reducers/groupsReducer';
+
 import { 
   Routes, Route, useMatch} from "react-router-dom"
 import { CssBaseline, Container  } from '@mui/material';
@@ -16,6 +18,8 @@ import Notification from './notes_components/Notification'
 import ProtectedRoute from './notes_components/Protected'
 import SingleNote from './notes_components/SingleView'
 import { logout } from './reducers/accountReducer';
+import Group from './notes_components/Groups';
+import GroupDetails from './notes_components/GroupsDetails';
 
 const App = () => {
   const dispatch = useDispatch()
@@ -30,14 +34,28 @@ const App = () => {
         dispatch(logout())
       } 
     });
+
+    dispatch(retrieveGroups())
+    .unwrap()
+    .then(data => {
+    })
+    .catch(e => {
+      if (e.message === 'Request failed with status code 401'){
+        dispatch(logout())
+      } 
+    });
   }, [dispatch]) 
 
   const match = useMatch('/:id')
-  let note = match ? match.params.id : null
+  const matchgroup = useMatch('/groups/:id')
 
+  let note = match ? match.params.id : null
+  let group = matchgroup ? matchgroup.params.id : null
+
+  
   const { pathname } = useLocation();
   const paths = ['/login', '/sign-up']
-  const paths2 = ['/notes', '/Notes', '/new', '/New', '/', `/${note}`]
+  const paths2 = ['/notes', '/Notes', '/new', '/New', '/', `/${note}`, `/groups/${group}`, '/groups', '/Groups']
   return (
      <>
        <CssBaseline />
@@ -71,7 +89,12 @@ const App = () => {
           }/>
              <Route path="Groups" element={
               <ProtectedRoute>
-                <NoteForm/>
+                <Group/>
+              </ProtectedRoute>
+          }/>
+           <Route path="groups/:id" element={
+              <ProtectedRoute>
+                <GroupDetails id={group}/>
               </ProtectedRoute>
           }/>
           <Route path="Login" element={

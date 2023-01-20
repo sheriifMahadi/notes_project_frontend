@@ -17,22 +17,23 @@ const NoteForm = () => {
     const noteObj = {
       label: event.target.title.value,
       content: event.target.content.value,
+      groupname: event.target.group.value,
       created: new Date().toISOString(),
       modified: new Date().toISOString(),
     }
     event.target.title.value = ''
     event.target.content.value = ''
-
     dispatch(createNote(noteObj))
       .unwrap()
       .then(data => {
+        event.target.title.value = ''
+        event.target.content.value = ''
         navigate("/");
       })
       .catch(e => {
           if (e.message === 'Request failed with status code 401'){
             dispatch(logout())
           } 
-        console.log(e);
       });
     
   }

@@ -32,7 +32,7 @@ export const retrieveSingleNotes = createAsyncThunk(
 )
 
 export const updateNote = createAsyncThunk(
-    "tutorials/update",
+    "note/update",
     async ({id, noteobj}, thunkAPI) => {
       const response = await noteService.updateNote(id, noteobj)
       thunkAPI.dispatch(updateNotification({msg: 'Note added successfully',  severity: 'success'}));
@@ -41,13 +41,12 @@ export const updateNote = createAsyncThunk(
   );
   
   export const deleteNote = createAsyncThunk(
-    "tutorials/delete",
+    "note/delete",
     async (id) => {
       await noteService.deleteNote(id)
       return { id };
     }
   );
-
 
 const noteSlice = createSlice({
     name: "note",
@@ -69,11 +68,12 @@ const noteSlice = createSlice({
               ...state[index],
               ...action.payload,
             };
+            console.log(action.payload)
           },
-          [deleteNote.fulfilled]: (state, action) => {
-            let index = state.findIndex(({ id }) => id === action.payload.id);
-            state.splice(index, 1);
-          },
+        [deleteNote.fulfilled]: (state, action) => {
+          let index = state.findIndex(({ id }) => id === action.payload.id);
+          state.splice(index, 1);
+        },
     }
 })  
 
