@@ -1,82 +1,51 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import noteService from '../services/notes'
-import { updateNotification } from "../reducers/notificationReducers";
+import { updateNotification } from './notificationReducers'
 
+const initialState = { items: [], status: 'idle', error: null, filters: { q: '', status: 'active', sort: 'modified', tag: '' } }
 
-const initialState = []
+export const retrieveNotes = createAsyncThunk('notes/retrieve', filters => noteService.getAllNotes(filters))
+export const retrieveSingleNotes = createAsyncThunk('notes/retrieveSingle', id => noteService.getSingleNote(id))
+export const createNote = createAsyncThunk('notes/create', async (note, thunkAPI) => {
+  const response = await noteService.createNote(note)
+  thunkAPI.dispatch(updateNotification({ msg: 'Note added successfully', severity: 'success' }))
+  return response
+})
+export const updateNote = createAsyncThunk('notes/update', async ({ id, noteobj }, thunkAPI) => {
+  const response = await noteService.updateNote(id, noteobj)
+  thunkAPI.dispatch(updateNotification({ msg: 'Note saved', severity: 'success' }))
+  return response
+})
+export const togglePin = createAsyncThunk('notes/pin', ({ id, pinned }) => noteService.setPinned(id, pinned))
+export const archiveNote = createAsyncThunk('notes/archive', ({ id, archived = true }) => noteService.setArchived(id, archived))
+export const trashNote = createAsyncThunk('notes/trash', ({ id, deleted = true }) => noteService.setTrashed(id, deleted))
+export const deleteNote = createAsyncThunk('notes/delete', async id => {
+  await noteService.deleteNote(id)
+  return id
+})
 
-export const createNote = createAsyncThunk(
-    "note/create",
-    async(noteobj, thunkAPI) => {
-        const response = await noteService.createNote(noteobj)
-        thunkAPI.dispatch(updateNotification({msg: 'Note added successfully',  severity: 'success'}));
-        return response
-    }
-)
-
-export const retrieveNotes = createAsyncThunk(
-    "note/retrieve",
-    async () => {
-        const response = await noteService.getAllNotes()
-        return response
-    }
-)
-
-
-export const retrieveSingleNotes = createAsyncThunk(
-  "note/retrieveSingle",
-  async (id) => {
-      const response = await noteService.getSingleNote(id)
-      return response
-  }
-)
-
-export const updateNote = createAsyncThunk(
-    "note/update",
-    async ({id, noteobj}, thunkAPI) => {
-      const response = await noteService.updateNote(id, noteobj)
-      thunkAPI.dispatch(updateNotification({msg: 'Note added successfully',  severity: 'success'}));
-      return response;
-    }
-  );
-  
-  export const deleteNote = createAsyncThunk(
-    "note/delete",
-    async (id) => {
-      await noteService.deleteNote(id)
-      return { id };
-    }
-  );
+const replaceNote = (state, note) => {
+  const index = state.items.findIndex(item => item.id === note.id)
+  if (index >= 0) state.items[index] = note
+}
 
 const noteSlice = createSlice({
-    name: "note",
-    initialState,
-    extraReducers: {
-        [createNote.fulfilled]: (state, action) => {
-            state.push(action.payload)
-        },
-        [retrieveNotes.fulfilled]: (state, action) => {
-            return [...action.payload];
+  name: 'notes',
+  initialState,
+  reducers: {
+    setFilters: (state, action) => { state.filters = { ...state.filters, ...action.payload } }
+  },
+  extraReducers: builder => builder
+    .addCase(retrieveNotes.pending, state => { state.status = 'loading'; state.error = null })
+    .addCase(retrieveNotes.fulfilled, (state, action) => { state.items = action.payload; state.status = 'succeeded' })
+    .addCase(retrieveNotes.rejected, (state, action) => { state.status = 'failed'; state.error = action.error.message })
+    .addCase(createNote.fulfilled, (state, action) => { state.items.unshift(action.payload) })
+    .addCase(updateNote.fulfilled, (state, action) => replaceNote(state, action.payload))
+    .addCase(togglePin.fulfilled, (state, action) => replaceNote(state, action.payload))
+    .addCase(archiveNote.fulfilled, (state, action) => { state.items = state.items.filter(note => note.id !== action.payload.id) })
+    .addCase(trashNote.fulfilled, (state, action) => { state.items = state.items.filter(note => note.id !== action.payload.id) })
+    .addCase(deleteNote.fulfilled, (state, action) => { state.items = state.items.filter(note => note.id !== action.payload) })
+})
 
-        },
-        [retrieveSingleNotes.fulfilled]: (state, action) => {
-          return [action.payload];
-      },
-        [updateNote.fulfilled]: (state, action) => {
-            const index = state.findIndex(note => note.id === action.payload.id);
-            state[index] = {
-              ...state[index],
-              ...action.payload,
-            };
-            console.log(action.payload)
-          },
-        [deleteNote.fulfilled]: (state, action) => {
-          let index = state.findIndex(({ id }) => id === action.payload.id);
-          state.splice(index, 1);
-        },
-    }
-})  
-
-const { reducer } = noteSlice
-export default reducer
-
+export const { setFilters } = noteSlice.actions
+export default noteSlice.reducer

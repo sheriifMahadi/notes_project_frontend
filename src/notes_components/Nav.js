@@ -16,12 +16,13 @@ import useStyles from '../styles/styles'
 import { Link } from "react-router-dom"
 import { useDispatch } from "react-redux"
 import { logout } from '../reducers/accountReducer';
+import { Brightness4, Brightness7 } from '@mui/icons-material';
 
 
-const pages = ['Notes', 'Groups', 'New'];
+const pages = ['Notes', 'Groups', 'New', 'Archive', 'Trash'];
 const settings = ['Logout'];
 
-function ResponsiveAppBar() {
+function ResponsiveAppBar({ mode, toggleTheme }) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   
@@ -104,7 +105,7 @@ function ResponsiveAppBar() {
                   <Typography textAlign="center">
                       <Link 
                       className={`${classes.navbar} ${classes.navbar3}`} 
-                      to={`/${page}`}>
+                      to={`/${page.toLowerCase()}`}>
                       {page}
                       </Link>
                   </Typography>
@@ -140,7 +141,7 @@ function ResponsiveAppBar() {
               >
                 <Link 
                 className={`${classes.navbar} ${classes.navbar2}`}
-                to={`/${page}`}
+                to={`/${page.toLowerCase()}`}
                 >
                     {page}
                 </Link>
@@ -149,6 +150,11 @@ function ResponsiveAppBar() {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
+            <Tooltip title={`Use ${mode === 'light' ? 'dark' : 'light'} mode`}>
+              <IconButton color="inherit" onClick={toggleTheme} aria-label="toggle color mode" sx={{ mr: 1 }}>
+                {mode === 'light' ? <Brightness4 /> : <Brightness7 />}
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="" src="" />

@@ -1,6 +1,6 @@
 
 import { Typography, TextField, Container,
-  Button} from "@mui/material"
+  Button, FormControlLabel, Switch} from "@mui/material"
 import useStyles from '../styles/styles'
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -38,7 +38,7 @@ export const GroupForm = (props) => {
         </div>
               <div>
               <Button variant="contained" 
-              type="contained" 
+              type="submit"
               size="large"
               className={classes.chosenColor}
               >
@@ -51,11 +51,12 @@ export const GroupForm = (props) => {
 }
 
 const Forms = (props) => {
-    const [group, setGroup] = useState('');
+    const [group, setGroup] = useState(props.initialValues?.group || '');
 
     const classes = useStyles()
     const defaultLabel= props.initialValues ? props.initialValues.label: ''
     const defaultContent = props.initialValues ? props.initialValues.content: ''
+    const defaultTags = props.initialValues?.tags?.join(', ') || ''
     
     const groups = useSelector(state => state.groups)
     
@@ -74,7 +75,7 @@ const Forms = (props) => {
             style={{marginTop: "30px"}}
             >{props.header}
             </Typography>
-            <form onSubmit={props.action}>
+            <form onSubmit={props.action} onChange={props.onFormChange}>
               <div style={{ marginBottom: '40px'}}>
                 <TextField
                 defaultValue={defaultLabel}
@@ -86,6 +87,18 @@ const Forms = (props) => {
                 margin="normal"
                 maxRows={3}
                 fullWidth
+                />
+              </div>
+              <div>
+                <TextField
+                  defaultValue={defaultTags}
+                  name="tags"
+                  variant="standard"
+                  color="warning"
+                  placeholder="Tags (comma separated)"
+                  margin="normal"
+                  fullWidth
+                  inputProps={{ maxLength: 320 }}
                 />
               </div>
               <div>
@@ -117,16 +130,20 @@ const Forms = (props) => {
                     <em>None</em>
                   </MenuItem>
                   {groups.map(group => 
-                    <MenuItem key={group.id} value={group.groupName}>
+                    <MenuItem key={group.id} value={group.id}>
                       {group.groupName}
                       </MenuItem>
                   )}
                 </Select>
             </FormControl>
               </div>
+              <FormControlLabel
+                control={<Switch name="pinned" color="warning" defaultChecked={Boolean(props.initialValues?.pinned)} />}
+                label="Pin this note"
+              />
               <div>
               <Button variant="contained" 
-              type="contained" 
+              type="submit"
               size="large"
               className={classes.chosenColor}
               >

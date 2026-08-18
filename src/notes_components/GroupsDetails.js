@@ -53,7 +53,7 @@ const GroupDetails = ({id}) => {
 		fetchGroup().then(resolved => {
 		if (resolved) {
 			setSingleGroup(resolved)
-			fetchNotes(resolved.notes).then(data => {
+			fetchNotes(resolved.id).then(data => {
 				data ? setSingle(data) : setSingle([]) 
 				
 			})
@@ -64,8 +64,7 @@ const GroupDetails = ({id}) => {
     const handleDelete = async (id) => {
 		try{
 			const res = await dispatch(deleteGroup(id)).unwrap()
-			navigate(`/Groups`);
-			window.location.reload();
+			navigate('/groups');
 			return res
 	  
 		  }catch(err) {

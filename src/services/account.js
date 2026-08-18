@@ -1,21 +1,11 @@
-import axios from "axios";
-const loginUrl = 'https://z-note.fly.dev/api/'
+import api from './api'
 
 const login = async credentials => {
-  const response = await axios.post(`${loginUrl}login`, credentials)
-  if (response.data.access_token ) {
-    await localStorage.setItem('user', JSON.stringify(response.data))
-  }
-  return response.data
+  const { data } = await api.post('/login', credentials)
+  localStorage.setItem('user', JSON.stringify(data))
+  return data
 }
-
-const register = async credentials => {
-  const response = await axios.post(`${loginUrl}users`, credentials)
-  return response
-}
-
-const logout = () => {
-  localStorage.removeItem("user");
-}
+const register = credentials => api.post('/users', credentials)
+const logout = () => localStorage.removeItem('user')
 
 export default { register, login, logout }

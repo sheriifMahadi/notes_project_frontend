@@ -1,10 +1,5 @@
 import * as React from 'react';
-import { CssVarsProvider, useColorScheme } from '@mui/joy/styles';
-import Sheet from '@mui/joy/Sheet';
-import Typography from '@mui/joy/Typography';
-import TextField from '@mui/joy/TextField';
-import Button from '@mui/joy/Button';
-import Link from '@mui/joy/Link';
+import { Button, Link, Paper, TextField, Typography } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import useStyles from '../styles/styles';
 import { useDispatch, useSelector } from "react-redux"
@@ -58,13 +53,13 @@ const SignUp = () => {
     <CircularProgress className={classes.LoginIcon}/>
   </div>) 
   :(
-    <CssVarsProvider>
+    <>
       <main>
           <div style={{textAlign:'center', padding: '0', margin: '60px 0 20px 0'}}>
             <LockIcon className={classes.LoginIcon}/>
           </div>
         <form onSubmit={handleSignup}>
-        <Sheet
+        <Paper
           sx={{
             width: 300,
             mx: 'auto', // margin left & right
@@ -74,16 +69,15 @@ const SignUp = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            borderRadius: 'sm',
-            boxShadow: 'md',
+            borderRadius: 1,
           }}
           variant="outlined"
         >
           <div>
-            <Typography level="h4" component="h1">
+            <Typography variant="h4" component="h1">
               <b>Welcome!</b>
             </Typography>
-            <Typography level="body2">Sign up to continue.</Typography>
+            <Typography variant="body2">Sign up to continue.</Typography>
           </div>
           <TextField
             // html input attribute
@@ -121,24 +115,20 @@ const SignUp = () => {
           />
             <Button 
             variant="contained" 
-            type="contained" 
+            type="submit"
             className={classes.chosenColor} 
             sx={{ mt: 1 /* margin top */ }}>
                 Sign Up
             </Button>
 
-          <Typography
-            endDecorator={<Link href="/login">Sign in</Link>}
-            fontSize="sm"
-            sx={{ alignSelf: 'center' }}
-          >
-            Already have an account?
+          <Typography variant="body2" sx={{ alignSelf: 'center' }}>
+            Already have an account? <Link href="/login">Sign in</Link>
           </Typography>
-        </Sheet>
+        </Paper>
         </form>
 
       </main>
-    </CssVarsProvider>
+    </>
   );
 }
 

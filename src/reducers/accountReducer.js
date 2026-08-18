@@ -52,29 +52,27 @@ const initialState = user
 const authSlice = createSlice({
     name: "auth",
     initialState,
-    extraReducers: {
-      [register.fulfilled]: (state, action) => {
+    extraReducers: builder => builder
+      .addCase(register.fulfilled, (state) => {
         state.isLoggedIn = false;
-      },
-      [register.rejected]: (state, action) => {
+      })
+      .addCase(register.rejected, (state) => {
         state.isLoggedIn = false;
-      },
-      [login.fulfilled]: (state, action) => {
+      })
+      .addCase(login.fulfilled, (state, action) => {
         state.isLoggedIn = true;
         state.user = action.payload.user;
-      },
-      [login.rejected]: (state, action) => {
+      })
+      .addCase(login.rejected, (state) => {
         state.isLoggedIn = false;
         state.user = null;
-      },
-      [logout.fulfilled]: (state, action) => {
+      })
+      .addCase(logout.fulfilled, (state) => {
         state.isLoggedIn = false;
         state.user = null;
-      },
-    },
+      }),
   });
 
 const { reducer } = authSlice;
 export default reducer;
-
 

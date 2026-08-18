@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/styles'
+import { makeStyles } from '@mui/styles'
 
 const BACKGROUND_COLOR = '#f26257'
 const TEXT_COLOR = 'white !important'

@@ -17,9 +17,9 @@ const NoteForm = () => {
     const noteObj = {
       label: event.target.title.value,
       content: event.target.content.value,
-      groupname: event.target.group.value,
-      created: new Date().toISOString(),
-      modified: new Date().toISOString(),
+      group: event.target.group.value || null,
+      tags: event.target.tags.value.split(',').map(tag => tag.trim()).filter(Boolean),
+      pinned: event.target.pinned.checked,
     }
     event.target.title.value = ''
     event.target.content.value = ''

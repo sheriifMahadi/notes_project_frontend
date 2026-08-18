@@ -2,13 +2,13 @@ import './App.css'
 import { useEffect, useState } from 'react'
 import Note from './notes_components/Notes';
 import NoteForm from './notes_components/NoteForm';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { retrieveNotes} from './reducers/notesReducer';
 import { retrieveGroups } from './reducers/groupsReducer';
 
 import { 
   Routes, Route, useMatch} from "react-router-dom"
-import { CssBaseline, Container  } from '@mui/material';
+import { CssBaseline, Container, ThemeProvider, createTheme } from '@mui/material';
 import ResponsiveAppBar from './notes_components/Nav';
 import Footer from './notes_components/Footer';
 import Login from './notes_components/Login'
@@ -23,8 +23,19 @@ import GroupDetails from './notes_components/GroupsDetails';
 
 const App = () => {
   const dispatch = useDispatch()
+  const isLoggedIn = useSelector(state => state.account.isLoggedIn)
+  const [mode, setMode] = useState(() => localStorage.getItem('theme') || 'light')
+  const theme = createTheme({
+    palette: { mode, primary: { main: '#f26257' }, warning: { main: '#f26257' } }
+  })
+  const toggleTheme = () => setMode(current => {
+    const next = current === 'light' ? 'dark' : 'light'
+    localStorage.setItem('theme', next)
+    return next
+  })
 
   useEffect(() => {
+    if (!isLoggedIn) return undefined
     dispatch(retrieveNotes())
     .unwrap()
     .then(data => {
@@ -44,7 +55,13 @@ const App = () => {
         dispatch(logout())
       } 
     });
-  }, [dispatch]) 
+  }, [dispatch, isLoggedIn])
+
+  useEffect(() => {
+    const handleExpired = () => dispatch(logout())
+    window.addEventListener('auth-expired', handleExpired)
+    return () => window.removeEventListener('auth-expired', handleExpired)
+  }, [dispatch])
 
   const match = useMatch('/:id')
   const matchgroup = useMatch('/groups/:id')
@@ -55,13 +72,12 @@ const App = () => {
   
   const { pathname } = useLocation();
   const paths = ['/login', '/sign-up']
-  const paths2 = ['/notes', '/Notes', '/new', '/New', '/', `/${note}`, `/groups/${group}`, '/groups', '/Groups']
   return (
-     <>
+     <ThemeProvider theme={theme}>
        <CssBaseline />
-       { paths.includes(pathname) || !paths2.includes(pathname)
+       { paths.includes(pathname.toLowerCase())
        ? null
-       : <ResponsiveAppBar/>}
+       : <ResponsiveAppBar mode={mode} toggleTheme={toggleTheme}/>}
         <Container maxWidth="sm">
 
         <Notification/>
@@ -72,22 +88,24 @@ const App = () => {
               <Note/>
             </ProtectedRoute>
           }/>
-          <Route path="Notes" element={
+          <Route path="notes" element={
              <ProtectedRoute>
               <Note/>
             </ProtectedRoute>
           }/>
+          <Route path="archive" element={<ProtectedRoute><Note view="archived"/></ProtectedRoute>}/>
+          <Route path="trash" element={<ProtectedRoute><Note view="trash"/></ProtectedRoute>}/>
             <Route path="/:id" element={
               <ProtectedRoute>
                 <SingleNote id={note}/>
               </ProtectedRoute>
           }/>
-          <Route path="New" element={
+          <Route path="new" element={
               <ProtectedRoute>
                 <NoteForm/>
               </ProtectedRoute>
           }/>
-             <Route path="Groups" element={
+             <Route path="groups" element={
               <ProtectedRoute>
                 <Group/>
               </ProtectedRoute>
@@ -97,7 +115,7 @@ const App = () => {
                 <GroupDetails id={group}/>
               </ProtectedRoute>
           }/>
-          <Route path="Login" element={
+          <Route path="login" element={
               <Login/>
           }/>
           <Route path="/sign-up" element={<SignUp/>}/>
@@ -106,7 +124,7 @@ const App = () => {
         </Container>
         <Footer/>
 
-      </>
+      </ThemeProvider>
   );
 }
 

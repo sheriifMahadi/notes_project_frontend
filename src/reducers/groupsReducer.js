@@ -40,9 +40,8 @@ export const retrieveGroupNotes = createAsyncThunk(
 export const deleteGroup = createAsyncThunk(
     "group/delete",
     async (id) => {
-      const response = await groupService.deleteGroup(id)
-      return response
-    //   return { id };
+      await groupService.deleteGroup(id)
+      return id
     }
   );
 
@@ -50,26 +49,20 @@ export const deleteGroup = createAsyncThunk(
 const groupSlice = createSlice({
     name: "group",
     initialState,
-    extraReducers: {
-        [createGroup.fulfilled]: (state, action) => {
+    extraReducers: builder => builder
+        .addCase(createGroup.fulfilled, (state, action) => {
             state.push(action.payload)
-        },
-        [retrieveGroups.fulfilled]: (state, action) => {
+        })
+        .addCase(retrieveGroups.fulfilled, (state, action) => {
           return [...action.payload];
-        },
-      [retrieveSingleGroup.fulfilled]: (state, action) => {
-        return [action.payload];
-        },
-        [retrieveGroupNotes.fulfilled]: (state, action) => {
-            return [...action.payload];
-        },
-        [deleteGroup.fulfilled]: (state, action) => {
-            let index = state.findIndex(({ id }) => id === action.payload.id);
-            state.splice(index, 1);
-          },
-    }
+        })
+        .addCase(retrieveSingleGroup.fulfilled, (state) => state)
+        .addCase(retrieveGroupNotes.fulfilled, (state) => state)
+        .addCase(deleteGroup.fulfilled, (state, action) => {
+            let index = state.findIndex(({ id }) => id === action.payload);
+            if (index >= 0) state.splice(index, 1);
+          })
 })  
 
 const { reducer } = groupSlice
 export default reducer
-

@@ -1,39 +1,9 @@
-import axios from 'axios'
-import authHeader from './token'
-const baseUrl = 'https://z-note.fly.dev/api/groups'
-const getMultiple = 'https://z-note.fly.dev/api/getmultiple'
+import api from './api'
 
-const getAllGroups = async() => {
-    const response = await axios.get(baseUrl,  { headers: authHeader() })
-    return response.data
-}
+const getAllGroups = async () => (await api.get('/groups')).data
+const getSingleGroup = async id => (await api.get(`/groups/${id}`)).data
+const getGroupNotes = async id => (await api.get(`/groups/${id}/notes`)).data
+const createGroup = async group => (await api.post('/groups', group)).data
+const deleteGroup = async id => api.delete(`/groups/${id}`)
 
-const getSingleGroup = async (id) => {
-    const response = await axios.get(`${baseUrl}/${id}`,  { headers: authHeader() })
-    return response.data
-
-}
-
-const getGroupNotes = async (id) => {
-    const response = await axios.post(getMultiple, id, { headers: authHeader() })
-    return response.data
-}
-
-const createGroup = async (newObj) => {
-    const response= await axios.post(baseUrl, newObj,  { headers: authHeader() })
-    return response.data
-}
-
-const deleteGroup = async (id) => {
-    await axios.delete(`${baseUrl}/${id}`,  { headers: authHeader() })
-    return getAllGroups()
-
-}
-
-export default {
-    getAllGroups,
-    getSingleGroup,
-    getGroupNotes,
-    createGroup,
-    deleteGroup,
-}
+export default { getAllGroups, getSingleGroup, getGroupNotes, createGroup, deleteGroup }

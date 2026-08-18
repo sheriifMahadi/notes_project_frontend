@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux'
 import  { retrieveSingleNotes } from "../reducers/notesReducer"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { updateNotification } from "../reducers/notificationReducers";
 import {
   useNavigate} from 'react-router-dom'
@@ -9,7 +9,7 @@ import Tooltip from '@mui/material/Tooltip';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import { Typography,  Container} from "@mui/material"
 import Forms from '../notes_components/Forms'
-import  { updateNote, deleteNote } from "../reducers/notesReducer"
+import  { updateNote, trashNote } from "../reducers/notesReducer"
 import { logout } from '../reducers/accountReducer';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { retrieveSingleGroup, retrieveGroupNotes, deleteGroup} from '../reducers/groupsReducer'
@@ -28,6 +28,8 @@ const SingleNote = ({id}) => {
     const [single, setSingle] = useState(initialState)
     const [display, setDisplay] = useState(false)
     const [singleGroup, setSingleGroup] = useState('')
+    const [saveState, setSaveState] = useState('')
+    const autosaveTimer = useRef(null)
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -70,7 +72,7 @@ const SingleNote = ({id}) => {
           
         }
       })
-    }, [])
+    }, [id])
       const convertDate = (d) => {    
         if (d) {
           let fullDate = new Date(d)
@@ -85,27 +87,46 @@ const SingleNote = ({id}) => {
         const noteObj = {
               label: event.target.title.value,
               content: event.target.content.value,
-              groupname: event.target.group.value,
-              modified: new Date().toISOString(),
+              group: event.target.group.value || null,
+              tags: event.target.tags.value.split(',').map(tag => tag.trim()).filter(Boolean),
+              pinned: event.target.pinned.checked,
             }
           
         dispatch(updateNote({id: single.id, noteobj: noteObj}))
           .unwrap()
           .then(data => {
-            console.log(data)
-            event.target.title.value = ''
-            event.target.content.value = ''
             setDisplay(false)
             setSingle(data)
           })
           .catch(e => {
           });
     }
+    const handleAutosave = event => {
+      const form = event.currentTarget
+      const noteObj = {
+        label: form.title.value,
+        content: form.content.value,
+        group: form.group.value || null,
+        tags: form.tags.value.split(',').map(tag => tag.trim()).filter(Boolean),
+        pinned: form.pinned.checked,
+      }
+      if (!noteObj.label.trim() || !noteObj.content.trim()) return
+      setSaveState('Saving…')
+      clearTimeout(autosaveTimer.current)
+      autosaveTimer.current = setTimeout(async () => {
+        try {
+          const data = await dispatch(updateNote({ id: single.id, noteobj: noteObj })).unwrap()
+          setSingle(data)
+          setSaveState('Saved')
+        } catch (error) {
+          setSaveState('Could not save')
+        }
+      }, 800)
+    }
     const handleDelete = async (id) => {
       try{
-        const res = await dispatch(deleteNote(id)).unwrap()
-        navigate(`/Groups`);
-        window.location.reload();
+        const res = await dispatch(trashNote({ id })).unwrap()
+        navigate('/');
         return res
       
         }catch(err) {
@@ -124,7 +145,9 @@ const SingleNote = ({id}) => {
           header={'Update Note'}
           action={handleUpdate}
           buttonLabel={'update note'}
-          initialValues={single}/>
+          initialValues={single}
+          onFormChange={handleAutosave}/>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>{saveState}</Typography>
       </div>)
     }
     return (
