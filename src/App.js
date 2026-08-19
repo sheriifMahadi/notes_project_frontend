@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import Note from './notes_components/Notes';
 import NoteForm from './notes_components/NoteForm';
 import { useDispatch, useSelector } from 'react-redux';
-import { retrieveNotes} from './reducers/notesReducer';
 import { retrieveGroups } from './reducers/groupsReducer';
 
 import { 
@@ -36,16 +35,6 @@ const App = () => {
 
   useEffect(() => {
     if (!isLoggedIn) return undefined
-    dispatch(retrieveNotes())
-    .unwrap()
-    .then(data => {
-    })
-    .catch(e => {
-      if (e.message === 'Request failed with status code 401'){
-        dispatch(logout())
-      } 
-    });
-
     dispatch(retrieveGroups())
     .unwrap()
     .then(data => {

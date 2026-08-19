@@ -4,12 +4,26 @@ import { updateNotification } from './notificationReducers'
 
 const initialState = { items: [], status: 'idle', error: null, filters: { q: '', status: 'active', sort: 'modified', tag: '' } }
 
-export const retrieveNotes = createAsyncThunk('notes/retrieve', filters => noteService.getAllNotes(filters))
+const apiError = error => error.response?.data?.error || error.message || 'Something went wrong'
+
+export const retrieveNotes = createAsyncThunk('notes/retrieve', async (filters, thunkAPI) => {
+  try {
+    return await noteService.getAllNotes(filters)
+  } catch (error) {
+    return thunkAPI.rejectWithValue(apiError(error))
+  }
+})
 export const retrieveSingleNotes = createAsyncThunk('notes/retrieveSingle', id => noteService.getSingleNote(id))
 export const createNote = createAsyncThunk('notes/create', async (note, thunkAPI) => {
-  const response = await noteService.createNote(note)
-  thunkAPI.dispatch(updateNotification({ msg: 'Note added successfully', severity: 'success' }))
-  return response
+  try {
+    const response = await noteService.createNote(note)
+    thunkAPI.dispatch(updateNotification({ msg: 'Note added successfully', severity: 'success' }))
+    return response
+  } catch (error) {
+    const message = apiError(error)
+    thunkAPI.dispatch(updateNotification({ msg: message, severity: 'error' }))
+    return thunkAPI.rejectWithValue(message)
+  }
 })
 export const updateNote = createAsyncThunk('notes/update', async ({ id, noteobj }, thunkAPI) => {
   const response = await noteService.updateNote(id, noteobj)
@@ -38,7 +52,7 @@ const noteSlice = createSlice({
   extraReducers: builder => builder
     .addCase(retrieveNotes.pending, state => { state.status = 'loading'; state.error = null })
     .addCase(retrieveNotes.fulfilled, (state, action) => { state.items = action.payload; state.status = 'succeeded' })
-    .addCase(retrieveNotes.rejected, (state, action) => { state.status = 'failed'; state.error = action.error.message })
+    .addCase(retrieveNotes.rejected, (state, action) => { state.status = 'failed'; state.error = action.payload || action.error.message })
     .addCase(createNote.fulfilled, (state, action) => { state.items.unshift(action.payload) })
     .addCase(updateNote.fulfilled, (state, action) => replaceNote(state, action.payload))
     .addCase(togglePin.fulfilled, (state, action) => replaceNote(state, action.payload))

@@ -14,26 +14,24 @@ const NoteForm = () => {
   
   const addNote = async (event) => {
     event.preventDefault()
+    const form = event.currentTarget
     const noteObj = {
-      label: event.target.title.value,
-      content: event.target.content.value,
-      group: event.target.group.value || null,
-      tags: event.target.tags.value.split(',').map(tag => tag.trim()).filter(Boolean),
-      pinned: event.target.pinned.checked,
+      label: form.title.value,
+      content: form.content.value,
+      group: form.group.value || null,
+      tags: form.tags.value.split(',').map(tag => tag.trim()).filter(Boolean),
+      pinned: form.pinned.checked,
     }
-    event.target.title.value = ''
-    event.target.content.value = ''
     dispatch(createNote(noteObj))
       .unwrap()
-      .then(data => {
-        event.target.title.value = ''
-        event.target.content.value = ''
-        navigate("/");
+      .then(() => {
+        form.reset()
+        navigate('/notes')
       })
       .catch(e => {
           if (e.message === 'Request failed with status code 401'){
             dispatch(logout())
-          } 
+          }
       });
     
   }

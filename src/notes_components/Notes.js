@@ -6,7 +6,7 @@ import {
   PushPinOutlined, RestoreFromTrashOutlined, UnarchiveOutlined
 } from '@mui/icons-material'
 import {
-  Box, Card, CardActions, CardContent, Chip, CircularProgress, Container,
+  Alert, Box, Card, CardActions, CardContent, Chip, CircularProgress, Container,
   FormControl, Grid, IconButton, InputLabel, MenuItem, Select, Stack, TextField,
   Tooltip, Typography
 } from '@mui/material'
@@ -19,7 +19,7 @@ const Note = ({ view = 'active' }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { items, status, filters } = useSelector(state => state.notes)
+  const { items, status, filters, error } = useSelector(state => state.notes)
   const groups = useSelector(state => state.groups)
   const activeFilters = { ...filters, status: view }
 
@@ -52,6 +52,7 @@ const Note = ({ view = 'active' }) => {
       </Stack>
 
       {status === 'loading' && <Box sx={{ textAlign: 'center', mt: 8 }}><CircularProgress color="warning" /></Box>}
+      {status === 'failed' && <Alert severity="error" sx={{ mt: 3 }}>{error || 'Could not load notes'}</Alert>}
       {status === 'succeeded' && items.length === 0 && (
         <Typography align="center" color="text.secondary" sx={{ mt: 8 }}>
           {view === 'active' ? 'No notes found. Create one or adjust your filters.' : `Your ${view} is empty.`}

@@ -101,14 +101,14 @@ function ResponsiveAppBar({ mode, toggleTheme }) {
               }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">
-                      <Link 
-                      className={`${classes.navbar} ${classes.navbar3}`} 
-                      to={`/${page.toLowerCase()}`}>
-                      {page}
-                      </Link>
-                  </Typography>
+                <MenuItem
+                  key={page}
+                  component={Link}
+                  to={`/${page.toLowerCase()}`}
+                  onClick={handleCloseNavMenu}
+                  className={`${classes.navbar} ${classes.navbar3}`}
+                >
+                  <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -136,15 +136,13 @@ function ResponsiveAppBar({ mode, toggleTheme }) {
             {pages.map((page) => (
               <Button
                 key={page}
+                component={Link}
+                to={`/${page.toLowerCase()}`}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                <Link 
                 className={`${classes.navbar} ${classes.navbar2}`}
-                to={`/${page.toLowerCase()}`}
-                >
-                    {page}
-                </Link>
+              >
+                {page}
               </Button>
             ))}
           </Box>
