@@ -4,21 +4,29 @@ import { updateNotification } from './notificationReducers'
 
 const initialState = { items: [], status: 'idle', error: null, filters: { q: '', status: 'active', sort: 'modified', tag: '' } }
 
-const apiError = error => {
+const userMessage = (error, action) => {
+  const status = error.response?.status
+  if (status === 401) return 'Your session has expired. Please sign in again.'
+  if (status === 422) return action === 'save'
+    ? 'Add a title and some content before saving.'
+    : 'Some note information is invalid.'
+  if (status === 429) return 'Too many attempts. Please wait a moment and try again.'
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-    return 'The notes server took too long to wake up. Please try again.'
+    return action === 'save'
+      ? 'Saving is taking longer than expected. Please try again.'
+      : 'Loading is taking longer than expected. Please try again.'
   }
-  if (!error.response) {
-    return 'Could not reach the notes server. Check the Render service URL and CORS settings.'
-  }
-  return error.response.data?.error || error.message || 'Something went wrong'
+  return action === 'save'
+    ? 'We couldn’t save your note. Your text is still here—please try again.'
+    : 'We couldn’t load your notes. Please try again.'
 }
 
 export const retrieveNotes = createAsyncThunk('notes/retrieve', async (filters, thunkAPI) => {
   try {
     return await noteService.getAllNotes(filters)
   } catch (error) {
-    return thunkAPI.rejectWithValue(apiError(error))
+    if (import.meta.env.DEV) console.error('Failed to load notes', error)
+    return thunkAPI.rejectWithValue(userMessage(error, 'load'))
   }
 })
 export const retrieveSingleNotes = createAsyncThunk('notes/retrieveSingle', id => noteService.getSingleNote(id))
@@ -28,7 +36,8 @@ export const createNote = createAsyncThunk('notes/create', async (note, thunkAPI
     thunkAPI.dispatch(updateNotification({ msg: 'Note added successfully', severity: 'success' }))
     return response
   } catch (error) {
-    const message = apiError(error)
+    if (import.meta.env.DEV) console.error('Failed to create note', error)
+    const message = userMessage(error, 'save')
     thunkAPI.dispatch(updateNotification({ msg: message, severity: 'error' }))
     return thunkAPI.rejectWithValue(message)
   }
