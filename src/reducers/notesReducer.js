@@ -17,7 +17,7 @@ const userMessage = (error, action) => {
       : 'Loading is taking longer than expected. Please try again.'
   }
   return action === 'save'
-    ? 'We couldn’t save your note. Your text is still here—please try again.'
+    ? 'Couldn’t save note. Try again.'
     : 'We couldn’t load your notes. Please try again.'
 }
 
