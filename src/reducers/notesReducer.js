@@ -4,7 +4,15 @@ import { updateNotification } from './notificationReducers'
 
 const initialState = { items: [], status: 'idle', error: null, filters: { q: '', status: 'active', sort: 'modified', tag: '' } }
 
-const apiError = error => error.response?.data?.error || error.message || 'Something went wrong'
+const apiError = error => {
+  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+    return 'The notes server took too long to wake up. Please try again.'
+  }
+  if (!error.response) {
+    return 'Could not reach the notes server. Check the Render service URL and CORS settings.'
+  }
+  return error.response.data?.error || error.message || 'Something went wrong'
+}
 
 export const retrieveNotes = createAsyncThunk('notes/retrieve', async (filters, thunkAPI) => {
   try {
